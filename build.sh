@@ -67,6 +67,7 @@ fi
 echo "==> sign"
 "$JAVA" -jar "$APKSIGNER" sign --ks "$KEYSTORE" \
   --ks-pass "pass:$STOREPASS" --key-pass "pass:$KEYPASS" --ks-key-alias "$ALIAS" \
+  --min-sdk-version 27 \
   --out "$OUT" "$BUILD/aligned.apk"
 
 echo "==> verify"
