@@ -2,14 +2,14 @@
 
 By JHCWColin
 
-一个 monorepo，包含三款应用：两款纯原生、完全离线的本地音乐播放器（Android 8.1+ / minSdk 27 / targetSdk 34）**共享同一个曲库**，外加一款 Tauri 音乐下载器。
+一个 monorepo，包含三款应用：两款纯原生、完全离线的本地音乐播放器（Android 8.1+ / minSdk 27 / targetSdk 34），各自维护**独立的本地曲库**，外加一款 Tauri 音乐下载器。
 
 ## App 列表
 
 | 目录 | App | 类型 | 角色 |
 |---|---|---|---|
-| `app/` | The Music Lives On 8 | Android（纯原生） | 共享曲库**宿主**（含 ContentProvider） |
-| `lyric-app/` | The Lyric Lives On 8 | Android（纯原生） | 共享曲库**客户端**（歌词加强版） |
+| `app/` | The Music Lives On 8 | Android（纯原生） | 音乐播放器（独立本地曲库） |
+| `lyric-app/` | The Lyric Lives On 8 | Android（纯原生） | 歌词加强版播放器（独立本地曲库） |
 | `downloader/` | The Downloader Lives On 8 | Tauri 2 + SvelteKit | 音乐下载器，下载存入音乐库文件夹 |
 
 ### The Music Lives On 8（宿主）
@@ -21,12 +21,11 @@ By JHCWColin
 - 歌词显示方式四种：单行 / 双行 / 三行居中大字，以及「全部列表」（当前句置顶、其余向下排列并淡出、左对齐、不受行数限制）。
 - 倍速仅存在于设置页。
 
-## 共享曲库
+## 曲库说明
 
-- 旧 App 作为数据源；新 App 通过 Provider 读写（任一边导入/删除，两边同步），未检测到旧 App 时自动回退本地库。
-- 新 App 播放/封面走宿主 Provider 的文件流，不需要自己的 URI 授权。
-- 导入任一边时自动互相授权（尽力而为；个别系统上跨应用授权可能不持久，可在两边各导入一次同一文件夹）。
-- **两个 APK 必须用同一把签名证书**（本仓库根目录 `release.jks`，别名 `musicliveson`，密码 `12345678`）。`com.jhcwcolin.sharedlib.ACCESS` 为 signature 级权限，签名不一致时共享失效。
+- 两个播放器 App **各自维护独立的本地曲库**（SQLite，存在各自应用私有目录），各自通过系统文件选择器（SAF）导入音乐 / 歌词 / 文件夹，导入时在本 App 内读取文件并提取歌手 / 时长 / 封面。
+- 曾尝试过跨 App 共享曲库（ContentProvider + 同签名），但因跨应用 URI 授权不稳定导致元数据丢失（歌手、时长为空）而**已撤销**，现改回独立逻辑。
+- 两个 App 仍使用同一把签名证书（仓库根目录 `release.jks`，别名 `musicliveson`，密码 `12345678`），但不再依赖签名做跨 App 数据共享。
 
 ## 构建
 

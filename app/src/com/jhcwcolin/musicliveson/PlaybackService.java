@@ -194,12 +194,7 @@ public class PlaybackService extends Service {
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .build());
-            try {
-                player.setDataSource(this, Uri.parse(t.uri));
-            } catch (SecurityException e) {
-                grantIfNeeded(t);
-                player.setDataSource(this, Uri.parse(t.uri));
-            }
+            player.setDataSource(this, Uri.parse(t.uri));
             player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override public void onPrepared(MediaPlayer mp) {
                     prepared = true;
@@ -243,17 +238,6 @@ public class PlaybackService extends Service {
             player.setPlaybackParams(p);
         } catch (Exception e) {
             // some codecs/devices do not support changing speed
-        }
-    }
-
-    private void grantIfNeeded(Track t) {
-        if (t == null) return;
-        String g = (t.grantUri != null) ? t.grantUri : t.uri;
-        try {
-            getContentResolver().takePersistableUriPermission(
-                    Uri.parse(g), Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        } catch (Exception e) {
-            // no grant; playback will fail and be reported by the error listener
         }
     }
 

@@ -10,12 +10,10 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.ParcelFileDescriptor;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,8 +44,7 @@ public class MainActivity extends Activity {
     private static final int REQ_IMPORT_FOLDER = 2;
     private static final int LYRIC_SLOTS = 10;
 
-    private ILibrary lib;
-    private SharedLibrary sharedLib;
+    private MusicDatabase db;
     private AppPrefs prefs;
     private PlaybackService svc;
     private boolean bound = false;
@@ -113,20 +110,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (SharedLibrary.isAvailable(this)) {
-            SharedLibrary sl = new SharedLibrary(this);
-            sharedLib = sl;
-            lib = sl;
-        } else {
-            lib = new LocalLibrary(this);
-        }
+        db = new MusicDatabase(this);
         prefs = new AppPrefs(this);
         setContentView(R.layout.activity_main);
 
         bindViews();
         setupPages();
         loadLibrary();
-        lrcMap = lib.allLrc();
+        lrcMap = db.allLrc();
         requestNotifPermissionIfNeeded();
         applyTheme();
         selectPage(navLibrary, pageLibrary);
@@ -134,16 +125,6 @@ public class MainActivity extends Activity {
         Intent si = new Intent(this, PlaybackService.class);
         startService(si);
         bindService(si, connection, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // the host app may have added/removed tracks in the shared library
-        if (pageLibrary != null && pageLibrary.getVisibility() == View.VISIBLE) {
-            lrcMap = lib.allLrc();
-            loadLibrary();
-        }
     }
 
     @Override
@@ -376,7 +357,7 @@ public class MainActivity extends Activity {
     // --- library ---
 
     private void loadLibrary() {
-        tracks = lib.allTracks();
+        tracks = db.allTracks();
         adapter = new TrackAdapter(this, tracks);
         trackList.setAdapter(adapter);
         boolean empty = tracks.isEmpty();
@@ -441,30 +422,6 @@ public class MainActivity extends Activity {
     }
 
     private void updateCover(Track t) {
-        if (sharedLib != null && t != null) {
-            // shared mode: cover is served by the host app's provider
-            String key = "provider:" + t.id;
-            if (key.equals(lastCoverPath)) return;
-            lastCoverPath = key;
-            ParcelFileDescriptor pfd = null;
-            try {
-                Uri cu = Uri.parse("content://" + SharedLibrary.AUTHORITY + "/cover/" + t.id);
-                pfd = getContentResolver().openFileDescriptor(cu, "r");
-                Bitmap b = (pfd != null) ? CoverLoader.decodeSampledFd(pfd, 128) : null;
-                if (b != null) {
-                    cover.setImageBitmap(b);
-                    cover.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    return;
-                }
-            } catch (Exception e) {
-                // fall through to placeholder
-            } finally {
-                if (pfd != null) { try { pfd.close(); } catch (Exception e) {} }
-            }
-            cover.setImageResource(R.drawable.ic_note);
-            cover.setScaleType(ImageView.ScaleType.CENTER);
-            return;
-        }
         String path = (t != null) ? t.coverPath : null;
         boolean same = (path == null && lastCoverPath == null)
                 || (path != null && path.equals(lastCoverPath));
@@ -638,13 +595,13 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override public void run() {
                 if (req == REQ_IMPORT_FILE) {
-                    FileImporter.importFiles(MainActivity.this, d, lib);
+                    FileImporter.importFiles(MainActivity.this, d, db);
                 } else if (req == REQ_IMPORT_FOLDER) {
-                    FileImporter.importFolder(MainActivity.this, d, lib);
+                    FileImporter.importFolder(MainActivity.this, d, db);
                 }
                 ui.post(new Runnable() {
                     @Override public void run() {
-                        lrcMap = lib.allLrc();
+                        lrcMap = db.allLrc();
                         loadLibrary();
                         Toast.makeText(MainActivity.this, "导入完成", Toast.LENGTH_SHORT).show();
                     }
@@ -661,7 +618,7 @@ public class MainActivity extends Activity {
                 .setMessage(R.string.remove_track_msg)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface d, int w) {
-                        lib.deleteTrack(t.id);
+                        db.deleteTrack(t.id);
                         deleteCoverFile(t.coverPath);
                         if (svc != null && svc.getCurrentTrack() != null
                                 && svc.getCurrentTrack().id == t.id) {
@@ -680,10 +637,10 @@ public class MainActivity extends Activity {
                 .setMessage(R.string.clear_confirm_msg)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface d, int w) {
-                        lib.deleteAll();
+                        db.deleteAll();
                         deleteRecursive(new File(getFilesDir(), "covers"));
                         if (svc != null) svc.stopPlayback();
-                        lrcMap = lib.allLrc();
+                        lrcMap = db.allLrc();
                         loadLibrary();
                     }
                 })

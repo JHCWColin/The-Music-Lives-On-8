@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** SQLite-backed permanent library (tracks + lyrics). */
+/** SQLite-backed permanent library (tracks + lyrics), one per app. */
 public class MusicDatabase extends SQLiteOpenHelper {
 
     public MusicDatabase(Context c) {
@@ -28,8 +28,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 + "album TEXT,"
                 + "duration INTEGER,"
                 + "cover TEXT,"
-                + "match_key TEXT,"
-                + "grant_uri TEXT)");
+                + "match_key TEXT)");
         db.execSQL("CREATE TABLE lrcs("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "uri TEXT UNIQUE,"
@@ -39,13 +38,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 2) {
-            try {
-                db.execSQL("ALTER TABLE tracks ADD COLUMN grant_uri TEXT");
-            } catch (Exception e) {
-                // column may already exist
-            }
-        }
+        // no schema changes needed between these builds
     }
 
     public boolean addTrack(Track t) {
@@ -57,7 +50,6 @@ public class MusicDatabase extends SQLiteOpenHelper {
         v.put("duration", t.durationMs);
         v.put("cover", t.coverPath);
         v.put("match_key", t.matchKey);
-        if (t.grantUri != null) v.put("grant_uri", t.grantUri);
         long r = getWritableDatabase().insertWithOnConflict(
                 "tracks", null, v, SQLiteDatabase.CONFLICT_IGNORE);
         return r != -1;
@@ -97,7 +89,6 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 t.durationMs = c.getLong(c.getColumnIndexOrThrow("duration"));
                 t.coverPath = c.getString(c.getColumnIndexOrThrow("cover"));
                 t.matchKey = c.getString(c.getColumnIndexOrThrow("match_key"));
-                try { t.grantUri = c.getString(c.getColumnIndexOrThrow("grant_uri")); } catch (Exception e) {}
                 list.add(t);
             }
         } finally {

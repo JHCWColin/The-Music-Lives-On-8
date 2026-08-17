@@ -5,13 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.os.ParcelFileDescriptor;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 
 /** Reads embedded audio metadata/cover art and caches the cover to app storage. */
 public final class CoverLoader {
@@ -92,48 +88,6 @@ public final class CoverLoader {
             o.inSampleSize = sample;
             o.inPreferredConfig = Bitmap.Config.RGB_565;
             return BitmapFactory.decodeFile(path, o);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /** Decode cover bytes served through a provider fd (used in shared-library mode). */
-    public static Bitmap decodeSampledFd(ParcelFileDescriptor pfd, int reqSize) {
-        if (pfd == null) return null;
-        InputStream is = null;
-        try {
-            is = new FileInputStream(pfd.getFileDescriptor());
-            byte[] data = readAll(is);
-            if (data == null || data.length == 0) return null;
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inJustDecodeBounds = true;
-            BitmapFactory.decodeByteArray(data, 0, data.length, o);
-            int w = o.outWidth;
-            int h = o.outHeight;
-            int sample = 1;
-            while (w / 2 >= reqSize && h / 2 >= reqSize) {
-                sample *= 2;
-                w /= 2;
-                h /= 2;
-            }
-            o.inJustDecodeBounds = false;
-            o.inSampleSize = sample;
-            o.inPreferredConfig = Bitmap.Config.RGB_565;
-            return BitmapFactory.decodeByteArray(data, 0, data.length, o);
-        } catch (Exception e) {
-            return null;
-        } finally {
-            if (is != null) { try { is.close(); } catch (Exception e) {} }
-        }
-    }
-
-    private static byte[] readAll(InputStream is) {
-        try {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[4096];
-            int n;
-            while ((n = is.read(buf)) != -1) bos.write(buf, 0, n);
-            return bos.toByteArray();
         } catch (Exception e) {
             return null;
         }

@@ -123,16 +123,6 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        // the paired app may have added/removed tracks in the shared library
-        if (pageLibrary != null && pageLibrary.getVisibility() == View.VISIBLE) {
-            lrcMap = db.allLrc();
-            loadLibrary();
-        }
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         stopTicker();

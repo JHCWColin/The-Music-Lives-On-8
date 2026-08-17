@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jhcwcolin.musicliveson"
-    android:versionCode="2"
-    android:versionName="1.1">
+    android:versionCode="3"
+    android:versionName="1.2">
 
     <uses-sdk android:minSdkVersion="27" android:targetSdkVersion="34"/>
 
@@ -10,10 +10,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-
-    <!-- Shared library: signature-level so only apps signed with the same key can access -->
-    <permission android:name="com.jhcwcolin.sharedlib.ACCESS" android:protectionLevel="signature"/>
-    <uses-permission android:name="com.jhcwcolin.sharedlib.ACCESS"/>
 
     <application
         android:label="@string/app_name"
@@ -38,12 +34,5 @@
             android:name=".PlaybackService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback"/>
-
-        <provider
-            android:name=".LibraryProvider"
-            android:authorities="com.jhcwcolin.musicliveson.provider"
-            android:exported="true"
-            android:readPermission="com.jhcwcolin.sharedlib.ACCESS"
-            android:writePermission="com.jhcwcolin.sharedlib.ACCESS"/>
     </application>
 </manifest>

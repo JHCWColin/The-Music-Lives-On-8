@@ -10,7 +10,6 @@ public class Track {
     public long durationMs;
     public String coverPath; // cached cover image path, may be null
     public String matchKey;  // base file name (no ext), lowercased
-    public String grantUri;  // uri the importer holds a grant on (tree or file), may be null
 
     public String artistLabel() {
         if (artist == null || artist.length() == 0

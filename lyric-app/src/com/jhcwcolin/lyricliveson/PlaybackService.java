@@ -14,7 +14,6 @@ import android.media.PlaybackParams;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ public class PlaybackService extends Service {
     private static final int NOTIF_ID = 1;
 
     private MediaPlayer player;
-    private ParcelFileDescriptor currentPfd;
     private final List<Track> queue = new ArrayList<Track>();
     private int index = -1;
     private float speed = 1.0f;
@@ -196,21 +194,11 @@ public class PlaybackService extends Service {
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .build());
-            if (SharedLibrary.isAvailable(this)) {
-                // Play through the host's provider so we never need our own URI grants.
-                Uri fu = Uri.parse("content://" + SharedLibrary.AUTHORITY + "/track_file/" + t.id);
-                ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(fu, "r");
-                if (pfd == null) throw new IllegalStateException("no fd for track");
-                currentPfd = pfd;
-                player.setDataSource(currentPfd.getFileDescriptor());
-            } else {
-                player.setDataSource(this, Uri.parse(t.uri));
-            }
+            player.setDataSource(this, Uri.parse(t.uri));
             player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override public void onPrepared(MediaPlayer mp) {
                     prepared = true;
                     consecutiveErrors = 0;
-                    closePfd();
                     applySpeed();
                     mp.start();
                     acquireWakelock();
@@ -253,15 +241,7 @@ public class PlaybackService extends Service {
         }
     }
 
-    private void closePfd() {
-        if (currentPfd != null) {
-            try { currentPfd.close(); } catch (Exception e) {}
-            currentPfd = null;
-        }
-    }
-
     private void releasePlayer() {
-        closePfd();
         if (player != null) {
             try { player.reset(); } catch (Exception e) {}
             try { player.release(); } catch (Exception e) {}
