@@ -5,9 +5,6 @@
     android:name="android.permission.WRITE_EXTERNAL_STORAGE"
     android:maxSdkVersion="28" />
 
-    <!-- 共享音乐库：signature 级权限，需与两个音乐 App 同一签名 -->
-    <permission android:name="com.jhcwcolin.sharedlib.ACCESS" android:protectionLevel="signature" />
-    <uses-permission android:name="com.jhcwcolin.sharedlib.ACCESS" />
 
     <!-- AndroidTV support -->
     <uses-feature android:name="android.software.leanback" android:required="false" />

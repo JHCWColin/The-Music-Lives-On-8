@@ -20,7 +20,7 @@
           </div>
             <h3 class="p-heading--3">用法(通用)：</h3>
             <p>搜索歌名或歌手，点击结果，你的下载将自动开始。</p>
-            <p>音频文件（mp3、aac）将自动存入音乐库文件夹（系统 Music 下的 The Music Lives On 8）</p>
+            <p>音频文件（mp3、aac）将自动存到系统下载文件夹（Downloads）</p>
 
           <!-- 卡片保留 padding -->
           <div class="p-card--highlighted" style="padding: 2rem;">
@@ -44,7 +44,7 @@
 
           <!-- 卡片保留 padding -->
           <div class="p-card--highlighted" style="padding: 2rem;">
-            <p>The Downloader Lives On 8 是一个音乐下载器，旨在用最少的操作下载音乐，并直接存入音乐库文件夹。</p>
+            <p>The Downloader Lives On 8 是一个音乐下载器，旨在用最少的操作下载音乐，并直接存入下载文件夹。</p>
             <p>本软件使用的API均由第三方免费提供。不保障可用性。请不要滥用。</p>
 
             <hr class="p-divider" style="margin: 1.5rem 0;" />

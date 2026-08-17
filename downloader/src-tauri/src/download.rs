@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::Write;
 
 #[cfg(target_os = "android")]
-use tauri_plugin_android_fs::{AndroidFsExt, PublicAudioDir};
+use tauri_plugin_android_fs::{AndroidFsExt, PublicDownloadsDir};
 
 #[tauri::command]
 pub async fn download_file_async_without_redirect(
@@ -59,7 +59,7 @@ pub async fn download_file_async(app_handle: tauri::AppHandle, url: String, name
     }
 }
 
-/// 下载文件到音乐库文件夹（Music/The Music Lives On 8）
+/// 下载文件到系统下载目录（Downloads）
 /// - url: 文件下载链接
 /// - name: 文件名（不含扩展名），若为空则使用 "music"
 /// - app_handle: Tauri 应用句柄
@@ -67,7 +67,7 @@ pub fn download_file(app_handle: tauri::AppHandle,url: &str, name: &str) -> Stri
     #[cfg(not(target_os = "android"))]
     let _ = app_handle;
     #[cfg(not(target_os = "android"))]
-    let dir = match dirs::audio_dir() {
+    let dir = match dirs::download_dir() {
         Some(dir) => dir,
         None => {
             eprintln!("⚠️ 无法获取下载目录");
@@ -87,9 +87,9 @@ pub fn download_file(app_handle: tauri::AppHandle,url: &str, name: &str) -> Stri
     // 组合文件名：使用提供的 name，若为空则用 "music"
     let base_name = if name.is_empty() { "music" } else { name };
     let filename = format!("{}.{}", base_name, extension);
-    // 创建子目录路径（存入音乐库文件夹）
+    // 直接保存到下载目录
     #[cfg(not(target_os = "android"))]
-    let download_folder = dir.join("The Music Lives On 8");
+    let download_folder = dir;
 
     // 如果目录不存在，则创建（包括父目录）
     #[cfg(not(target_os = "android"))]
@@ -198,8 +198,8 @@ pub async fn save_bytes_to_music_dir(
     let _uri = public
         .write_new(
             None,                  // 主存储
-            PublicAudioDir::Music, // 目标目录：Music
-            format!("The Music Lives On 8/{}", file_name),
+            PublicDownloadsDir::Downloads, // 目标目录：Downloads
+            file_name,
             None, // 自动推断 MIME 类型
             bytes,
         )

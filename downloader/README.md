@@ -12,10 +12,11 @@ Tauri 2 + SvelteKit 音乐下载器，是 [musicdownloader](https://github.com/a
 - 顶部标题栏：`The Downloader Lives On 8` + 小字 `By abpdf/JHCWColin`。
 - 墨水瓶（e-ink）优化：纯黑白高对比配色，全部关闭动画 / 过渡 / 阴影，避免残影。
 
-## 与音乐库的关系
+## 下载位置
 
-- 下载的文件落在 `Music/The Music Lives On 8/`。在两个音乐 App（`app/` 与 `lyric-app/`）里把这个文件夹导入曲库（SAF 授权一次），之后每次下载都会自动出现在曲库中。
-- Android 目标（`src-tauri/gen/android/`）已声明共享曲库的 signature 级权限 `com.jhcwcolin.sharedlib.ACCESS`；如需在 Android 上直接写入共享曲库，需用本仓库根目录 `release.jks` 签名（与两个音乐 App 相同），再做内容 Provider 对接。
+- 下载的音频文件直接存到系统**下载文件夹（Downloads）**。
+- 之后在两个音乐 App（`app/` 与 `lyric-app/`）里导入该文件夹（SAF 授权一次），下载的歌曲即可进入各自的曲库。
+- 两个音乐 App 各自维护独立的本地曲库（曾尝试跨 App 共享曲库，因跨应用 URI 授权不稳定已撤销）。
 
 ## 开发
 
