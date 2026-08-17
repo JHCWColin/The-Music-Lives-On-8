@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">The Lyric Lives On 8</string>
+    <string name="app_byline">By JHCWColin</string>
+
+    <string name="tab_library">音乐库</string>
+    <string name="tab_player">播放器</string>
+    <string name="tab_settings">设置</string>
+
+    <string name="import_file">导入文件</string>
+    <string name="import_folder">导入文件夹</string>
+    <string name="empty_library">曲库为空\n点击上方按钮导入音乐或歌词</string>
+
+    <string name="no_track">未在播放</string>
+    <string name="no_lyrics">暂无歌词</string>
+
+    <string name="prev_track">上一首</string>
+    <string name="play">播放</string>
+    <string name="pause">暂停</string>
+    <string name="next_track">下一首</string>
+    <string name="stop">停止</string>
+
+    <string name="settings_lyrics">歌词显示</string>
+    <string name="lyric_display">歌词显示方式</string>
+    <string name="lyric_single">单行</string>
+    <string name="lyric_double">双行</string>
+    <string name="lyric_triple">三行</string>
+    <string name="lyric_list">全部列表</string>
+
+    <string name="settings_display">显示</string>
+    <string name="eink_mode">墨水瓶模式（高对比度）</string>
+
+    <string name="settings_playback">播放</string>
+    <string name="speed_setting">播放速度</string>
+    <string name="speed_setting_hint">倍速仅在此处调节（0.5×–2.0×），播放器页不再显示</string>
+
+    <string name="settings_library">曲库</string>
+    <string name="clear_library">清空曲库</string>
+
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="clear_confirm_title">清空曲库</string>
+    <string name="clear_confirm_msg">确定要清空整个曲库吗？此操作不可撤销。</string>
+    <string name="remove_track_title">移除歌曲</string>
+    <string name="remove_track_msg">从曲库中移除这首歌曲？</string>
+
+    <string name="notif_channel_name">音乐播放</string>
+    <string name="notif_playing">正在播放</string>
+
+    <string name="about_title">关于</string>
+    <string name="about_text">The Lyric Lives On 8\nBy JHCWColin\n\n离线本地音乐播放器\nApple Music 式全屏歌词界面，\n静态显示（不滚动），最多同时三行，\n大字号、无省略号，针对墨水瓶优化。\n倍速 0.5×–2.0× 仅在设置中调节。</string>
+</resources>
