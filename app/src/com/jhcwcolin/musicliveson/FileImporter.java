@@ -19,6 +19,9 @@ import java.util.List;
  */
 public final class FileImporter {
 
+    /** The paired lyric app; grants it persistent access so both can play shared tracks. */
+    private static final String SIBLING_PKG = "com.jhcwcolin.lyricliveson";
+
     public interface Listener {
         void onDone();
     }
@@ -36,9 +39,10 @@ public final class FileImporter {
         }
         for (Uri u : uris) {
             grantPersist(c, u);
+            grantSibling(c, u);
             String name = queryName(c, u);
             if (name == null) name = u.getLastPathSegment();
-            classifyAndImport(c, db, u, name, null);
+            classifyAndImport(c, db, u, name, null, u.toString());
         }
     }
 
@@ -46,12 +50,13 @@ public final class FileImporter {
         Uri tree = data.getData();
         if (tree == null) return;
         grantPersist(c, tree);
+        grantSibling(c, tree);
         String docId = DocumentsContract.getTreeDocumentId(tree);
         Uri children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, docId);
-        scanChildren(c, tree, children, db);
+        scanChildren(c, tree, children, db, tree.toString());
     }
 
-    private static void scanChildren(Context c, Uri tree, Uri children, MusicDatabase db) {
+    private static void scanChildren(Context c, Uri tree, Uri children, MusicDatabase db, String grantUri) {
         ContentResolver cr = c.getContentResolver();
         Cursor cur = null;
         try {
@@ -88,9 +93,9 @@ public final class FileImporter {
         for (Entry e : entries) {
             if (e.dir) {
                 Uri sub = DocumentsContract.buildChildDocumentsUriUsingTree(tree, e.docId);
-                scanChildren(c, tree, sub, db);
+                scanChildren(c, tree, sub, db, grantUri);
             } else {
-                classifyAndImport(c, db, e.uri, e.name, folderCover);
+                classifyAndImport(c, db, e.uri, e.name, folderCover, grantUri);
             }
         }
     }
@@ -110,17 +115,17 @@ public final class FileImporter {
                 || b.equals("front") || b.equals("artwork") || b.equals("albumart");
     }
 
-    private static void classifyAndImport(Context c, MusicDatabase db, Uri uri, String name, String folderCover) {
+    private static void classifyAndImport(Context c, MusicDatabase db, Uri uri, String name, String folderCover, String grantUri) {
         if (name == null) return;
         if (Util.isLyrics(name)) {
             importLrc(c, db, uri, name);
         } else if (Util.isAudio(name)) {
-            importTrack(c, db, uri, name, folderCover);
+            importTrack(c, db, uri, name, folderCover, grantUri);
         }
         // anything else is ignored
     }
 
-    private static void importTrack(Context c, MusicDatabase db, Uri uri, String name, String folderCoverUri) {
+    private static void importTrack(Context c, MusicDatabase db, Uri uri, String name, String folderCoverUri, String grantUri) {
         if (db.hasTrackUri(uri.toString())) return;
         String fallback = Util.baseName(name);
         if (fallback.length() == 0) fallback = "未知曲目";
@@ -133,6 +138,7 @@ public final class FileImporter {
         t.durationMs = m.durationMs;
         t.coverPath = m.coverPath;
         t.matchKey = Util.matchKey(name);
+        t.grantUri = grantUri;
         db.addTrack(t);
     }
 
@@ -185,6 +191,16 @@ public final class FileImporter {
                     uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } catch (Exception e) {
             // provider may not support persistence; entry still usable this session
+        }
+    }
+
+    private static void grantSibling(Context c, Uri uri) {
+        try {
+            c.grantUriPermission(SIBLING_PKG, uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        } catch (Exception e) {
+            // sibling not installed; harmless
         }
     }
 

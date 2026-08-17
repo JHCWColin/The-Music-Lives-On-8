@@ -15,7 +15,7 @@ import java.util.Map;
 public class MusicDatabase extends SQLiteOpenHelper {
 
     public MusicDatabase(Context c) {
-        super(c, "library.db", null, 1);
+        super(c, "library.db", null, 2);
     }
 
     @Override
@@ -28,7 +28,8 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 + "album TEXT,"
                 + "duration INTEGER,"
                 + "cover TEXT,"
-                + "match_key TEXT)");
+                + "match_key TEXT,"
+                + "grant_uri TEXT)");
         db.execSQL("CREATE TABLE lrcs("
                 + "_id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "uri TEXT UNIQUE,"
@@ -38,7 +39,13 @@ public class MusicDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // version 1 only
+        if (oldVersion < 2) {
+            try {
+                db.execSQL("ALTER TABLE tracks ADD COLUMN grant_uri TEXT");
+            } catch (Exception e) {
+                // column may already exist
+            }
+        }
     }
 
     public boolean addTrack(Track t) {
@@ -50,6 +57,7 @@ public class MusicDatabase extends SQLiteOpenHelper {
         v.put("duration", t.durationMs);
         v.put("cover", t.coverPath);
         v.put("match_key", t.matchKey);
+        if (t.grantUri != null) v.put("grant_uri", t.grantUri);
         long r = getWritableDatabase().insertWithOnConflict(
                 "tracks", null, v, SQLiteDatabase.CONFLICT_IGNORE);
         return r != -1;
@@ -66,12 +74,33 @@ public class MusicDatabase extends SQLiteOpenHelper {
     }
 
     public boolean hasTrackUri(String uri) {
+        return findTrackId(uri) != -1;
+    }
+
+    public long findTrackId(String uri) {
         Cursor c = getReadableDatabase().query(
                 "tracks", new String[]{"_id"}, "uri=?",
                 new String[]{uri}, null, null, null);
-        boolean has = c.moveToFirst();
+        long id = -1;
+        if (c.moveToFirst()) id = c.getLong(0);
         c.close();
-        return has;
+        return id;
+    }
+
+    public Track findTrack(long id) {
+        Cursor c = getReadableDatabase().query(
+                "tracks", null, "_id=?",
+                new String[]{String.valueOf(id)}, null, null, null);
+        Track t = null;
+        if (c.moveToFirst()) t = readTrack(c);
+        c.close();
+        return t;
+    }
+
+    public void updateCover(long id, String coverPath) {
+        ContentValues v = new ContentValues();
+        v.put("cover", coverPath);
+        getWritableDatabase().update("tracks", v, "_id=?", new String[]{String.valueOf(id)});
     }
 
     public List<Track> allTracks() {
@@ -80,21 +109,26 @@ public class MusicDatabase extends SQLiteOpenHelper {
                 "tracks", null, null, null, null, null, "title COLLATE NOCASE ASC");
         try {
             while (c.moveToNext()) {
-                Track t = new Track();
-                t.id = c.getLong(c.getColumnIndexOrThrow("_id"));
-                t.uri = c.getString(c.getColumnIndexOrThrow("uri"));
-                t.title = c.getString(c.getColumnIndexOrThrow("title"));
-                t.artist = c.getString(c.getColumnIndexOrThrow("artist"));
-                t.album = c.getString(c.getColumnIndexOrThrow("album"));
-                t.durationMs = c.getLong(c.getColumnIndexOrThrow("duration"));
-                t.coverPath = c.getString(c.getColumnIndexOrThrow("cover"));
-                t.matchKey = c.getString(c.getColumnIndexOrThrow("match_key"));
-                list.add(t);
+                list.add(readTrack(c));
             }
         } finally {
             c.close();
         }
         return list;
+    }
+
+    private Track readTrack(Cursor c) {
+        Track t = new Track();
+        t.id = c.getLong(c.getColumnIndexOrThrow("_id"));
+        t.uri = c.getString(c.getColumnIndexOrThrow("uri"));
+        t.title = c.getString(c.getColumnIndexOrThrow("title"));
+        t.artist = c.getString(c.getColumnIndexOrThrow("artist"));
+        t.album = c.getString(c.getColumnIndexOrThrow("album"));
+        t.durationMs = c.getLong(c.getColumnIndexOrThrow("duration"));
+        t.coverPath = c.getString(c.getColumnIndexOrThrow("cover"));
+        t.matchKey = c.getString(c.getColumnIndexOrThrow("match_key"));
+        try { t.grantUri = c.getString(c.getColumnIndexOrThrow("grant_uri")); } catch (Exception e) {}
+        return t;
     }
 
     public Map<String, String> allLrc() {
