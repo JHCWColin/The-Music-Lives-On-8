@@ -1,0 +1,16 @@
+# dependencies
+node_modules
+/.svelte-kit
+
+# rust build output (regenerable, very large)
+/src-tauri/target
+
+# editor / local
+/.vscode
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example

@@ -1,0 +1,86 @@
+// 1. 导入整个框架
+@import "vanilla-framework";
+
+// 2. 包含所有样式
+@include vanilla;
+
+// ===== The Downloader Lives On 8 — 墨水瓶(e-ink)优化 =====
+:root {
+  --dl-ink: #000000;
+  --dl-paper: #ffffff;
+  --dl-gray: #555555;
+  --dl-line: #999999;
+}
+
+html,
+body {
+  background: var(--dl-paper) !important;
+  color: var(--dl-ink) !important;
+}
+
+/* 墨水瓶：关闭所有动画 / 过渡 / 阴影，避免残影 */
+* {
+  transition: none !important;
+  animation: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* 顶部标题栏 */
+.dl-header {
+  background: var(--dl-paper);
+  border-bottom: 2px solid var(--dl-ink);
+  text-align: center;
+  padding: 12px 16px 8px 16px;
+}
+.dl-header__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dl-ink);
+  letter-spacing: 0.02em;
+}
+.dl-header__byline {
+  font-size: 0.8rem;
+  color: var(--dl-gray);
+  margin-top: 2px;
+}
+
+/* 高对比按钮：纯黑白描边 */
+.p-button,
+.p-button--positive,
+.p-button--link {
+  background: var(--dl-paper) !important;
+  color: var(--dl-ink) !important;
+  border: 1px solid var(--dl-ink) !important;
+  border-radius: 2px !important;
+  text-decoration: none !important;
+}
+.p-button:hover,
+.p-button--positive:hover {
+  background: var(--dl-ink) !important;
+  color: var(--dl-paper) !important;
+}
+
+/* 卡片 */
+.p-card--highlighted {
+  background: var(--dl-paper) !important;
+  border: 1px solid var(--dl-line) !important;
+  border-left: 3px solid var(--dl-ink) !important;
+  box-shadow: none !important;
+  color: var(--dl-ink) !important;
+}
+
+/* 标题 / 链接统一高对比 */
+h1,
+h2,
+h3,
+.p-heading--1,
+.p-heading--2,
+.p-heading--3 {
+  color: var(--dl-ink) !important;
+}
+
+a {
+  color: var(--dl-ink) !important;
+  text-decoration: underline !important;
+}
