@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::Write;
 
 #[cfg(target_os = "android")]
-use tauri_plugin_android_fs::{AndroidFsExt, PublicDownloadsDir};
+use tauri_plugin_android_fs::{AndroidFsExt, PublicGeneralPurposeDir};
 
 #[tauri::command]
 pub async fn download_file_async_without_redirect(
@@ -198,7 +198,7 @@ pub async fn save_bytes_to_music_dir(
     let _uri = public
         .write_new(
             None,                  // 主存储
-            PublicDownloadsDir::Downloads, // 目标目录：Downloads
+            PublicGeneralPurposeDir::Download, // 目标目录：Downloads
             file_name,
             None, // 自动推断 MIME 类型
             bytes,
